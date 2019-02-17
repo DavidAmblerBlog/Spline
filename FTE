@@ -1,0 +1,10 @@
+FIX (FY10, BegBalance, @RELATIVE("Total_Jobs", 0), &UserScenario, Working) 
+ FTE (
+   IF (Cur_Emp_Start_Date + 1 != 1 and (Cur_Emp_End_Date > &CurPeriod)) 
+       varEndDate = @MINS(SKIPBOTH, Cur_Emp_End_Date, &Last_Day_In_Application);
+       varStartDate = @MAXS(SKIPBOTH, Cur_Emp_Start_Date, YYYYMM->&CurMth->&CurYear * 100 + 1);
+       FTE = @SPLINE(FTE->BegBalance, 0,, @XRANGE(@MEMBER(@CONCATENATE("FY", @CalcMgrDatetoString(varStartDate, "yy")))->@MEMBER(@CalcMgrDatetoString(varStartDate, "MMM")), @MEMBER(@CONCATENATE("FY", @CalcMgrDatetoString(varEndDate, "yy")))->@MEMBER(@CalcMgrDatetoString(varEndDate, "MMM"))));
+       FTE->@MEMBER(@CONCATENATE("FY", @CalcMgrDatetoString(varStartDate, "yy")))->@MEMBER(@CalcMgrDatetoString(varStartDate, "MMM")) = @MINS(SKIPBOTH, ((@CalcMgrGetMaxDaysInMonth(varStartDate) - @CalcMgrGetDay(varStartDate) + 1) / @CalcMgrGetMaxDaysInMonth(varStartDate)), (@HSPDATEDIFF(varStartDate, varEndDate) + 1) / @CalcMgrGetMaxDaysInMonth(varStartDate));
+       FTE->@MEMBER(@CONCATENATE("FY", @CalcMgrDatetoString(varEndDate, "yy")))->@MEMBER(@CalcMgrDatetoString(varEndDate, "MMM")) = @MINS(SKIPBOTH, (@CalcMgrGetDay(varEndDate) / @CalcMgrGetMaxDaysInMonth(varEndDate)), (@HSPDATEDIFF(varStartDate, varEndDate) + 1) / @CalcMgrGetMaxDaysInMonth(varEndDate));
+   ENDIF)
+ENDFIX
