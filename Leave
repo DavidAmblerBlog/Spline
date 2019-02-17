@@ -1,0 +1,34 @@
+FIX (E1, FY09, Working, BegBalance, @RELATIVE(Total_Jobs, 0), Month, "Rolling") 
+    "FTE" (
+        IF (Leave_End_Date != #MISSING) 
+            vLeaveStartDate1 = @MINS(SKIPNONE, @LIST(Leave_Start_Date, &Last_Day_In_Application));
+            vLeaveEndDate1 = @MINS(SKIPNONE, @LIST(Leave_End_date, &Last_Day_In_Application));
+            "FTE" = @SPLINE(FTE_Before_Leave, 0,, @XRANGE(@MEMBER(@CONCATENATE("FY", @CalcMgrDatetoString(vLeaveStartDate1, "yy")))->@MEMBER(@CalcMgrDatetoString(vLeaveStartDate1, "MMM")),@MEMBER(@CONCATENATE("FY", @CalcMgrDatetoString(vLeaveEndDate1, "yy")))->@MEMBER(@CalcMgrDatetoString(vLeaveEndDate1, "MMM"))));
+        ENDIF
+ENDFIX		
+FIX (Working, @RELATIVE("Total_Jobs", 0), Month, "Rolling") 
+    FIX "FY19") 
+        FIX (Jan : Dec) 
+            CLEARDATA FTE_Before_Leave;
+        ENDFIX 
+    ENDFIX 
+ENDFIX
+FIX (E1, FY10, Working, BegBalance, @RELATIVE(Total_Jobs, 0), Month, "Rolling") 
+ FTE_Before_Leave(    
+ IF (Leave_End_Date != #MISSING) 
+            vLeaveStartDate1 = @MINS(SKIPNONE, @LIST(Leave_Start_Date, &Last_Day_In_Application));
+            vLeaveEndDate1 = @MINS(SKIPNONE, @LIST(Leave_End_date, &Last_Day_In_Application));
+            "FTE_Before_Leave" = @SPLINE("FTE", 0,, @XRANGE(@MEMBER(@CONCATENATE("FY", @CalcMgrDatetoString(Leave_Start_date, "yy")))->@MEMBER(@CalcMgrDatetoString(Leave_Start_date, "MMM")),													@MEMBER(@CONCATENATE("FY", @CalcMgrDatetoString(vLeaveEndDate1, "yy")))->@MEMBER(@CalcMgrDatetoString(vLeaveEndDate1, "MMM"))));
+            "FTE_Before_Leave"->@MEMBER(@CONCATENATE("FY", @CalcMgrDatetoString(Leave_Start_date, "yy")))->@MEMBER(@CalcMgrDatetoString(Leave_Start_date, "MMM")) = FTE->@MEMBER(@CONCATENATE("FY", @CalcMgrDatetoString(Leave_Start_date, "yy")))->@MEMBER(@CalcMgrDatetoString(Leave_Start_date, "MMM"));
+  ENDIF)
+ENDFIX
+FIX ("FY19", "Jan" : Dec, E1, Working, @RELATIVE("Total_Jobs", 0), Month, "Rolling") 
+    "FTE" (
+        IF ("On_Leave" == 1) 
+               FTE = (1 - FTE_OnLeave_Fraction) * FTE_Before_Leave;
+		ENDIF)			
+ENDFIX					
+					
+FIX (Working, Month, "Rolling", E1, @RELATIVE("Total_Jobs", 0), "Leave_Start_Date", "Leave_End_Date") 
+    DATACOPY "FY10" to "FY09";
+ENDFIX 	
